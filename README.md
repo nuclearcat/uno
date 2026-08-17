@@ -25,7 +25,8 @@ is contained in [`uno.c`](uno.c).
 - Search from the cursor with document wrapping and repeat searches with F3.
 - Replace matches individually or all at once. An empty replacement deletes
   matching text.
-- Cut and paste the current line with Nano-style shortcuts.
+- Cut and paste lines with Nano-style shortcuts. Consecutive cuts accumulate so
+  they can be pasted together.
 - Save existing or newly named files.
 - Confirm whether to save, discard, or cancel when quitting with unsaved work.
 - Scroll vertically and horizontally, expand tabs, and adapt to terminal size.
@@ -79,8 +80,8 @@ Press `Ctrl-O` to choose a filename when saving an unnamed buffer.
 | Search | `Ctrl-W` |
 | Find next | `F3` |
 | Search and replace | `Ctrl-\` |
-| Cut current line | `Ctrl-K` |
-| Paste cut line | `Ctrl-U` |
+| Cut current line (consecutive cuts accumulate) | `Ctrl-K` |
+| Paste cut line(s) | `Ctrl-U` |
 | Backspace | `Backspace` or `Ctrl-H` |
 | Delete forward | `Delete` |
 | Start/end of line | `Home` / `End` |

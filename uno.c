@@ -51,6 +51,7 @@ typedef struct {
     char *filename;
     char *clipboard;
     size_t clipboard_len;
+    bool cut_chain;
     char *last_search;
     char status[256];
     time_t status_time;
@@ -334,19 +335,26 @@ static void editor_cut_line(void)
     bool has_previous = E.cy > 0;
     size_t prefix = (!has_next && has_previous) ? 1 : 0;
     size_t suffix = has_next ? 1 : 0;
+    size_t cut_len = prefix + row->size + suffix;
+    bool appending = E.cut_chain;
+    size_t old_len = appending ? E.clipboard_len : 0;
 
-    free(E.clipboard);
-    E.clipboard_len = prefix + row->size + suffix;
-    E.clipboard = malloc(E.clipboard_len + 1);
-    if (!E.clipboard)
-        die("malloc");
-    size_t pos = 0;
+    if (!E.cut_chain) {
+        free(E.clipboard);
+        E.clipboard = NULL;
+    }
+    char *clipboard = realloc(E.clipboard, old_len + cut_len + 1);
+    if (!clipboard)
+        die("realloc");
+    E.clipboard = clipboard;
+    size_t pos = old_len;
     if (prefix)
         E.clipboard[pos++] = '\n';
     memcpy(E.clipboard + pos, row->chars, row->size);
     pos += row->size;
     if (suffix)
         E.clipboard[pos++] = '\n';
+    E.clipboard_len = pos;
     E.clipboard[pos] = '\0';
 
     if (E.numrows == 1) {
@@ -364,7 +372,8 @@ static void editor_cut_line(void)
         }
     }
     E.dirty++;
-    editor_set_status("Cut one line");
+    E.cut_chain = true;
+    editor_set_status("Cut %sline", appending ? "another " : "one ");
 }
 
 static void editor_paste(void)
@@ -379,7 +388,7 @@ static void editor_paste(void)
         else
             editor_insert_char((unsigned char)E.clipboard[i]);
     }
-    editor_set_status("Pasted cut line");
+    editor_set_status("Pasted cut line(s)");
 }
 
 static int editor_row_display_x(const editor_row *row, int cx)
@@ -909,6 +918,9 @@ static void editor_confirm_quit(void)
 static void editor_process_keypress(void)
 {
     int c = editor_read_key();
+
+    if (c != CTRL_KEY('k'))
+        E.cut_chain = false;
 
     switch (c) {
     case CTRL_KEY('x'):
