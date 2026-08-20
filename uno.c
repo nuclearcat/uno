@@ -30,7 +30,8 @@ enum editor_key {
     KEY_END,
     KEY_PAGE_UP,
     KEY_PAGE_DOWN,
-    KEY_F3
+    KEY_F3,
+    KEY_ESC_ESC
 };
 
 typedef struct {
@@ -144,6 +145,8 @@ static int editor_read_key(void)
     char seq[8] = {0};
     if (!read_byte(&seq[0]))
         return '\x1b';
+    if (seq[0] == '\x1b')
+        return KEY_ESC_ESC;
     if (!read_byte(&seq[1]))
         return '\x1b';
 
@@ -512,7 +515,7 @@ static void editor_draw_status_bar(append_buffer *ab)
 static void editor_draw_message_bar(append_buffer *ab)
 {
     static const char help[] =
-        "^O Save  ^X Exit  ^W Find  ^\\ Replace  ^K Cut  ^U Paste  F3 Next";
+        "^O Save  ^X/^Q Exit  ^W Find  ^\\ Replace  ^K Cut  ^U Paste  F3 Next";
     const char *message = help;
     size_t len = strlen(help);
 
@@ -917,13 +920,18 @@ static void editor_confirm_quit(void)
 
 static void editor_process_keypress(void)
 {
+    static bool esc_pending = false;
     int c = editor_read_key();
+    bool esc_repeated = esc_pending && c == '\x1b';
 
+    esc_pending = c == '\x1b';
     if (c != CTRL_KEY('k'))
         E.cut_chain = false;
 
     switch (c) {
     case CTRL_KEY('x'):
+    case CTRL_KEY('q'):
+    case KEY_ESC_ESC:
         editor_confirm_quit();
         break;
     case CTRL_KEY('o'):
@@ -978,7 +986,12 @@ static void editor_process_keypress(void)
         editor_move_cursor(c);
         break;
     case CTRL_KEY('l'):
+        break;
     case '\x1b':
+        if (esc_repeated) {
+            esc_pending = false;
+            editor_confirm_quit();
+        }
         break;
     case '\t':
         editor_insert_char('\t');
@@ -1041,7 +1054,7 @@ int main(int argc, char **argv)
     else
         editor_insert_row(0, "", 0);
     enable_raw_mode();
-    editor_set_status("^O Save | ^X Exit | ^W Find | ^\\ Replace | ^K Cut | ^U Paste");
+    editor_set_status("^O Save | ^X or ^Q or Esc Esc Exit | ^W Find | ^\\ Replace | ^K Cut | ^U Paste");
 
     while (!E.quit) {
         editor_refresh_screen();

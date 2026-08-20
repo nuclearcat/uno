@@ -14,7 +14,7 @@ is contained in [`uno.c`](uno.c).
 │ }                                                                 │
 ├───────────────────────────────────────────────────────────────────┤
 │ hello.c - 7 lines (modified)                                4:17  │
-│ ^O Save  ^X Exit  ^W Find  ^\ Replace  ^K Cut  ^U Paste  F3 Next │
+│ ^O Save ^X/^Q Exit ^W Find ^\ Replace ^K Cut ^U Paste F3 Next      │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -29,6 +29,8 @@ is contained in [`uno.c`](uno.c).
   they can be pasted together.
 - Save existing or newly named files.
 - Confirm whether to save, discard, or cancel when quitting with unsaved work.
+- Quit with `Ctrl-X`, `Ctrl-Q`, or a double `Esc` for terminals and serial
+  console clients that swallow `Ctrl-X`.
 - Scroll vertically and horizontally, expand tabs, and adapt to terminal size.
 - Build from one C source file using standard C and POSIX terminal APIs.
 
@@ -76,7 +78,7 @@ Press `Ctrl-O` to choose a filename when saving an unnamed buffer.
 | Action | Key |
 |---|---|
 | Save | `Ctrl-O` |
-| Quit | `Ctrl-X` |
+| Quit | `Ctrl-X`, `Ctrl-Q`, or `Esc Esc` |
 | Search | `Ctrl-W` |
 | Find next | `F3` |
 | Search and replace | `Ctrl-\` |
